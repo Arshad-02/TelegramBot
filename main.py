@@ -13,8 +13,6 @@ bot = telebot.TeleBot(API_KEY,skip_pending = True)
 apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 
 
-#bot_http = "https://api.telegram.org/bot1965065617:AAGyJ5PIkDTozjRnUEi-sd4awL_XyhJjHhk/getupdates"
-
 
 @bot.message_handler(commands = ["help","start"])
 def greet(message):
