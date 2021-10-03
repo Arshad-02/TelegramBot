@@ -33,7 +33,7 @@ Uptimerobot
 - Uptimerobot is a free online hosting service, You may need to login to host your bot.
 - After logging in, you can copy your replit server url and host it using uptimerobot. 
 
-##Pafy
+## Pafy
 
 - Pafy is a python library which makes this project possible.
 - It is used to download youtube video/audio and access meta data.
