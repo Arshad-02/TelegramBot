@@ -1,7 +1,7 @@
 import os
 import telebot
 import pafy
-import time
+import random
 import youtube_dl
 from telebot import types,apihelper
 from keep_alive import keep_alive 
@@ -12,11 +12,38 @@ API_KEY = os.getenv("TOKEN")
 bot = telebot.TeleBot(API_KEY,skip_pending = True)
 apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 
+responses = [
+"It is certain.",
+"It is decidedly so.",
+"Without a doubt.",
+"Yes - definitely.",
+"You may rely on it.",
+"As I see it, yes.",
+"Most likely.",
+"Outlook good.",
+"Yes.",
+"Signs point to yes.",
+"Reply hazy, try again.",
+"Ask again later.",
+"Better not tell you now.",
+"Cannot predict now.",
+"Concentrate and ask again.",
+"Don't count on it.",
+"My reply is no.",
+"My sources say no.",
+"Outlook not so good.",
+"Very doubtful."]
+
+text_messages = {
+    'welcome':
+        u'Please welcome {name}!\n\n'
+        u'This chat is intended for bot testing and discussion.\n'
+        u'I hope you enjoy your stay here!'}
 
 
 @bot.message_handler(commands = ["help","start"])
 def greet(message):
-  bot.reply_to(message,"Hello I am Alfred,\n1.I can download audio from youtube videos, You can do that by sharing the video link with me.\n2.You can now search for youtube videos right from telegram by texting Alfred <video name>\n3.As alfred is in early stage of development,we only support youtube links with a maximum duration of 5 mins.\nSooner in the future there will be support for video downloads from multiple platforms and many more exciting features, soo stay tuned.")
+  bot.reply_to(message,"Hello I am Alfred,\n1.I can download audio from youtube videos, You can do that by sharing the video link with me.\n2.You can now search for youtube videos right from telegram by texting Alfred <video name>\n3.As alfred is in early stage of development,we only support youtube links with a maximum duration of 5 mins.4. Added 8ball, to use just text 8ball <your question>.\nSooner in the future there will be support for video downloads from multiple platforms and many more exciting features, soo stay tuned.")
     
 #Check cmd
 
@@ -123,7 +150,30 @@ def yt_get(message):
     else:
       bot.send_message(chat_id,"Something went wrong")
 
+@bot.message_handler(func=lambda m: True, content_types=['new_chat_participant'])
+def on_user_joins(message):
+    name = message.new_chat_participant.first_name
+    if hasattr(message.new_chat_participant, 'last_name') and message.new_chat_participant.last_name is not None:
+        name += u" {}".format(message.new_chat_participant.last_name)
+
+    if hasattr(message.new_chat_participant, 'username') and message.new_chat_participant.username is not None:
+        name += u" (@{})".format(message.new_chat_participant.username)
+
+    bot.reply_to(message, text_messages['welcome'].format(name=name))
+
+
+def _8ball(message):
+  request = message.text.split()
+  if len(request) < 2 or request[0] not in "8ball":
+    return False
+  else:
+    return True
+
+@bot.message_handler(func = _8ball)
+def _8ballhandler(message):
+  bot.reply_to(message,random.choice(responses))
+
 print("bot is now active")
 keep_alive()
-bot.polling(none_stop =True,skip_pending = True,)
+bot.infinity_polling(non_stop =True,skip_pending = True)
 
