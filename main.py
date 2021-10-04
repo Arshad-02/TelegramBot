@@ -34,6 +34,10 @@ responses = [
 "Outlook not so good.",
 "Very doubtful."]
 
+roll_die = ["1","2","3","4","5","6"]
+
+options = ["Paper", "Rock", "Scissors", "Rock", "Scissors", "Paper"]
+
 text_messages = {
     'welcome':
         u'Please welcome {name}!\n\n'
@@ -172,6 +176,38 @@ def _8ball(message):
 @bot.message_handler(func = _8ball)
 def _8ballhandler(message):
   bot.reply_to(message,random.choice(responses))
+
+def die_roll(message):
+  request = message.text.split()
+  if len(request) > 1 or request[0] not in "Roll":
+    return False
+  else:
+    return True
+
+@bot.message_handler(func = die_roll)
+def dice_handler(message):
+  bot.reply_to(message,random.choice(roll_die))
+
+def rps_check(message):
+  request = message.text.split()
+  if len(request) > 1 or request[0] not in options:
+    return False
+  else:
+    return True
+
+@bot.message_handler(func = rps_check)
+def mini_game(message):
+  choice = random.choice(options)
+  user_choice = message.text
+  def rps(user_choice,choice):
+    if (user_choice == "Rock" and choice == "Scissors") or (user_choice == "Paper" and choice == "Rock") or (user_choice == "Scissors" and choice == "Paper"):
+        return True  
+  if user_choice == choice:
+      bot.reply_to(message,f"It's a tie, Your choice : {user_choice}\n my choice :{choice}")
+  elif rps(user_choice,choice):
+      bot.reply_to(message,f"You Won, Your choice :{user_choice}\n my choice :{choice}")
+  else:
+      bot.reply_to(message,f"You lose, Your choice :{user_choice}\n my choice :{choice}")
 
 print("bot is now active")
 keep_alive()
