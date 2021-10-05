@@ -154,6 +154,8 @@ def yt_get(message):
     else:
       bot.send_message(chat_id,"Something went wrong")
 
+#welcome message
+
 @bot.message_handler(func=lambda m: True, content_types=['new_chat_participant'])
 def on_user_joins(message):
     name = message.new_chat_participant.first_name
@@ -165,6 +167,7 @@ def on_user_joins(message):
 
     bot.reply_to(message, text_messages['welcome'].format(name=name))
 
+#mini game
 
 def _8ball(message):
   request = message.text.split()
