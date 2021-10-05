@@ -7,6 +7,7 @@ from telebot import types,apihelper
 from keep_alive import keep_alive 
 import urllib.request
 import re
+import wikipedia
 
 API_KEY = os.getenv("TOKEN")
 bot = telebot.TeleBot(API_KEY,skip_pending = True)
@@ -154,6 +155,8 @@ def yt_get(message):
     else:
       bot.send_message(chat_id,"Something went wrong")
 
+#welcome message
+
 @bot.message_handler(func=lambda m: True, content_types=['new_chat_participant'])
 def on_user_joins(message):
     name = message.new_chat_participant.first_name
@@ -165,6 +168,7 @@ def on_user_joins(message):
 
     bot.reply_to(message, text_messages['welcome'].format(name=name))
 
+#mini game
 
 def _8ball(message):
   request = message.text.split()
@@ -208,6 +212,31 @@ def mini_game(message):
       bot.reply_to(message,f"You Won, Your choice :{user_choice}\n my choice :{choice}")
   else:
       bot.reply_to(message,f"You lose, Your choice :{user_choice}\n my choice :{choice}")
+
+def img_search(message):
+  request = message.text.split()
+  if len(request) < 1 or request[0] not in "Wimg":
+    return False
+  else:
+    return True
+
+@bot.message_handler(func = img_search)
+def get_img(message):
+  wiki_img = message.text.split("Wimg ", 1)[1]
+  img_s = ":" + wiki_img + ":"
+  bot.reply_to(message,"Processing your request....")
+  no = random.randrange(0, 9)
+  img = wikipedia.page(img_s).images[no]
+  check = img.split(".")[-1]
+  num = 0
+  while check != "jpg":
+    img = wikipedia.page(img_s).images[num]
+    num+=1
+    check = img.split(".")[-1]
+    if num >12:
+        img = "https://bitsofco.de/content/images/2018/12/broken-1.png"
+        break
+  bot.send_photo(message.chat.id,img)
 
 print("bot is now active")
 keep_alive()
