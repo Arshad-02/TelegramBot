@@ -10,7 +10,7 @@ import urllib.request
 import re
 import wikipedia
 
-API_KEY = os.getenv("TOKEN")
+API_KEY = secret.TOKEN
 bot = telebot.TeleBot(API_KEY)
 telebot.apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 
