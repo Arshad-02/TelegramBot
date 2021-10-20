@@ -2,16 +2,17 @@ import os
 import telebot
 import pafy
 import random
+import time
 import youtube_dl
-from telebot import types,apihelper
+from telebot import types
 from keep_alive import keep_alive 
 import urllib.request
 import re
 import wikipedia
 
 API_KEY = os.getenv("TOKEN")
-bot = telebot.TeleBot(API_KEY,skip_pending = True)
-apihelper.SESSION_TIME_TO_LIVE = 5 * 60
+bot = telebot.TeleBot(API_KEY)
+telebot.apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 
 responses = [
 "It is certain.",
@@ -37,7 +38,10 @@ responses = [
 
 roll_die = ["1","2","3","4","5","6"]
 
-options = ["Paper", "Rock", "Scissors", "Rock", "Scissors", "Paper"]
+options = ["Paper", "Rock", "Scissors"]
+
+stickers = ["CAACAgIAAxkBAAIH-GFkWlHh4EGC0xkqmdsIJkCYBQaYAAJeAQACEBptItNORzH8jWOyIQQ","CAACAgIAAxkBAAIH-mFkWyPU3xEgH5GPRApGL2yiUlb5AAJjAQACEBptImu6AmhfaYu5IQQ","CAACAgIAAxkBAAIH_WFkW1AfCGynFkc8Mt2ud-BtaObDAAJZAQACEBptIh2VbDlfzkAfIQQ","CAACAgIAAxkBAAIIBGFkW8XdNT6PahbjZ-EnheHF3ftgAAJhAQACEBptIu-IjH2qmk0HIQQ","CAACAgIAAxkBAAIIB2FkXAfwr2fwHYWNVPquNxR5iVRWAAJuAQACEBptIqZdn9Atu9XsIQQ"]
+
 
 text_messages = {
     'welcome':
@@ -45,10 +49,9 @@ text_messages = {
         u'This chat is intended for bot testing and discussion.\n'
         u'I hope you enjoy your stay here!'}
 
-
 @bot.message_handler(commands = ["help","start"])
 def greet(message):
-  bot.reply_to(message,"Hello I am Alfred,\n1.I can download audio from youtube videos, You can do that by sharing the video link with me.\n2.You can now search for youtube videos right from telegram by texting Alfred <video name>\n3.As alfred is in early stage of development,we only support youtube links with a maximum duration of 5 mins.4. Added 8ball, to use just text 8ball <your question>.\nSooner in the future there will be support for video downloads from multiple platforms and many more exciting features, soo stay tuned.")
+  bot.reply_to(message,"Hello I am Alfred,\n1️⃣. I can download audio from youtube videos, You can do that by sharing the video link with me.\n2️⃣. You can now search for youtube videos right from telegram by texting Alfred <video name>. \n3️⃣. Added 8ball, to use just text 8ball <your question>.\n4️⃣.Rock Paper Scissor.\n5️⃣.Image searcher source:Wikipedia use Wimg <topic>\n🏳️‍🌈As alfred is in early stage of development,we only support youtube links with a maximum duration of 5 mins.Sooner in the future there will be support for video downloads from multiple platforms and many more exciting features, soo stay tuned.")
     
 #Check cmd
 
@@ -155,30 +158,15 @@ def yt_get(message):
     else:
       bot.send_message(chat_id,"Something went wrong")
 
-#welcome message
-
-@bot.message_handler(func=lambda m: True, content_types=['new_chat_participant'])
-def on_user_joins(message):
-    name = message.new_chat_participant.first_name
-    if hasattr(message.new_chat_participant, 'last_name') and message.new_chat_participant.last_name is not None:
-        name += u" {}".format(message.new_chat_participant.last_name)
-
-    if hasattr(message.new_chat_participant, 'username') and message.new_chat_participant.username is not None:
-        name += u" (@{})".format(message.new_chat_participant.username)
-
-    bot.reply_to(message, text_messages['welcome'].format(name=name))
-
-#mini game
-
-def _8ball(message):
+def eightball(message):
   request = message.text.split()
-  if len(request) < 2 or request[0] not in "8ball":
+  if len(request) < 1 or request[0] not in "8ball":
     return False
   else:
     return True
 
-@bot.message_handler(func = _8ball)
-def _8ballhandler(message):
+@bot.message_handler(func = eightball)
+def eightrun(message):
   bot.reply_to(message,random.choice(responses))
 
 def die_roll(message):
@@ -222,23 +210,38 @@ def img_search(message):
 
 @bot.message_handler(func = img_search)
 def get_img(message):
-  wiki_img = message.text.split("Wimg ", 1)[1]
-  img_s = ":" + wiki_img + ":"
-  bot.reply_to(message,"Processing your request....")
-  no = random.randrange(0, 9)
-  img = wikipedia.page(img_s).images[no]
-  check = img.split(".")[-1]
-  num = 0
-  while check != "jpg":
-    img = wikipedia.page(img_s).images[num]
-    num+=1
-    check = img.split(".")[-1]
-    if num >12:
-        img = "https://bitsofco.de/content/images/2018/12/broken-1.png"
-        break
-  bot.send_photo(message.chat.id,img)
+    try:
+        wiki_img = message.text.split("Wimg ", 1)[1]
+        img_s = ":" + wiki_img + ":"
+        bot.reply_to(message,"Processing your request....")
+        no = random.randrange(0, 9)
+        img = wikipedia.page(img_s).images[no]
+        check = img.split(".")[-1]
+        num = 0
+        while check != "jpg":
+            img = wikipedia.page(img_s).images[num]
+            num+=1
+            check = img.split(".")[-1]
+            if check == "png":
+                break
+            if check == "jpg":
+                break
+            if num > 6:
+                img = "https://bitsofco.de/content/images/2018/12/broken-1.png"
+                break
+        bot.send_photo(message.chat.id,img)
+    except:
+        bot.reply_to(message,"Bad request")
+
+@bot.message_handler(content_types = ["stickers","sticker"])
+def sticker(message):
+    bot.reply_to(message,message.sticker.file_id)
+
+@bot.message_handler(commands = ["sticker"])
+def sticker_send(message):
+    bot.send_sticker(message.chat.id,random.choice(stickers))
+
 
 print("bot is now active")
 keep_alive()
-bot.infinity_polling(non_stop =True,skip_pending = True)
-
+bot.infinity_polling(skip_pending = True)
