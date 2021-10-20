@@ -241,6 +241,7 @@ def sticker(message):
 def sticker_send(message):
     bot.send_sticker(message.chat.id,random.choice(stickers))
 
+
 print("bot is now active")
 keep_alive()
 bot.infinity_polling(skip_pending = True)
